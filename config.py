@@ -15,7 +15,7 @@ class Config:
     
     LINK_EXPIRATION = int(os.getenv("LINK_EXPIRATION", "604800"))
     
-    DOWNLOAD_DIR = "downloads"
+    DOWNLOAD_DIR = "./downloads"
     
     @classmethod
     def validate(cls):
