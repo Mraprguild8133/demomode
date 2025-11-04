@@ -19,7 +19,7 @@ if __name__ == "__main__":
     time.sleep(2)
     bot_process.start()
     
-    domain = os.getenv('RENDER_URL', 'localhost:5000')
+    domain = os.getenv('REPLIT_DEV_DOMAIN', 'localhost:5000')
     
     print("✅ Both services started!")
     print("🌐 Web Server: https://" + domain)
