@@ -201,15 +201,16 @@ async def handle_file(client: Client, message: Message):
         
         days = Config.LINK_EXPIRATION // 86400
         
-        web_domain = os.getenv('REPLIT_DEV_DOMAIN')
-        if web_domain:
-            scheme = 'https'
-        else:
+        # Get web domain for player URL
+        web_domain = os.getenv('REPLIT_DEV_DOMAIN') or os.getenv('REPL_SLUG') + '.repl.co'
+        if not web_domain:
             web_domain = 'localhost:5000'
-            scheme = 'http'
+        
+        scheme = 'https' if 'repl.co' in web_domain else 'http'
         
         file_type = 'video' if content_type and content_type.startswith('video/') else 'audio' if content_type and content_type.startswith('audio/') else 'document'
         
+        # Create player URL
         encoded_url = urllib.parse.quote(download_link, safe='')
         encoded_name = urllib.parse.quote(file_name, safe='')
         player_url = f"{scheme}://{web_domain}/player?url={encoded_url}&name={encoded_name}&type={file_type}"
@@ -267,11 +268,24 @@ Choose an option below:
             except Exception as cleanup_error:
                 print(f"Warning: Could not delete temporary file {local_path}: {cleanup_error}")
 
+# Error handler for large files
+@app.on_message(filters.video & filters.private)
+async def handle_large_video(client: Client, message: Message):
+    if message.video.file_size > 4 * 1024 * 1024 * 1024:
+        await message.reply_text("❌ Video file too large! Maximum size is 4GB.")
+
+# Service message handler
+@app.on_message(filters.service)
+async def service_message(client: Client, message: Message):
+    # Ignore service messages like pin notifications, etc.
+    return
+
 if __name__ == "__main__":
     try:
         Config.validate()
         print("✅ Configuration validated")
         print("🚀 Starting Telegram Bot...")
+        print("🤖 Bot is running...")
         app.run()
     except ValueError as e:
         print(f"❌ Configuration Error: {e}")
