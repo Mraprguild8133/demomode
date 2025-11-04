@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ file_name }} - Media Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .player-container {
+            max-width: 1200px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .player-header {
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .player-header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+        
+        .player-header p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+        
+        .media-wrapper {
+            position: relative;
+            background: #000;
+        }
+        
+        video, audio {
+            width: 100%;
+            max-height: 80vh;
+            display: block;
+            outline: none;
+        }
+        
+        audio {
+            height: 60px;
+        }
+        
+        .audio-placeholder {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 100px 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .audio-placeholder .icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .audio-placeholder h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            padding: 20px 30px;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .info-text {
+            color: #888;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        @media (max-width: 768px) {
+            .player-header h1 {
+                font-size: 1.2em;
+            }
+            
+            .download-btn {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="player-header">
+            <h1>{{ file_name }}</h1>
+            <p>{% if file_type == 'video' %}ðŸŽ¥ Video Player{% else %}ðŸŽµ Audio Player{% endif %}</p>
+        </div>
+        
+        <div class="media-wrapper">
+            {% if file_type == 'video' %}
+                <video id="mediaPlayer" controls autoplay preload="metadata">
+                    <source src="{{ url }}" type="video/mp4">
+                    <source src="{{ url }}" type="video/webm">
+                    <source src="{{ url }}" type="video/ogg">
+                    Your browser does not support the video tag.
+                </video>
+            {% else %}
+                <div class="audio-placeholder">
+                    <div class="icon">ðŸŽµ</div>
+                    <h2>{{ file_name }}</h2>
+                    <p>Now Playing</p>
+                </div>
+                <audio id="mediaPlayer" controls autoplay preload="metadata">
+                    <source src="{{ url }}" type="audio/mpeg">
+                    <source src="{{ url }}" type="audio/ogg">
+                    <source src="{{ url }}" type="audio/wav">
+                    Your browser does not support the audio tag.
+                </audio>
+            {% endif %}
+        </div>
+        
+        <div class="controls">
+            <a href="{{ url }}" class="download-btn" download>ðŸ“¥ Download File</a>
+            <div class="info-text">
+                ðŸ’¡ Tip: You can adjust playback speed and quality using the player controls
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const player = document.getElementById('mediaPlayer');
+        
+        player.addEventListener('error', function(e) {
+            console.error('Media error:', e);
+            alert('Error loading media. The link may have expired or the file format is not supported.');
+        });
+        
+        player.addEventListener('loadedmetadata', function() {
+            console.log('Media loaded successfully');
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (player.paused) {
+                    player.play();
+                } else {
+                    player.pause();
+                }
+            } else if (e.code === 'ArrowLeft') {
+                player.currentTime = Math.max(0, player.currentTime - 5);
+            } else if (e.code === 'ArrowRight') {
+                player.currentTime = Math.min(player.duration, player.currentTime + 5);
+            }
+        });
+    </script>
+</body>
+  </html>
